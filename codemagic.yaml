@@ -6,19 +6,20 @@ workflows:
     scripts:
       - name: Unzip project
         script: |
-          unzip -o ruhul.zip
-          cp -rn ruhul/* . || true
+          unzip -o ruhul.zip || true
+          find . -maxdepth 3 -type f
       - name: Set up local.properties
         script: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
       - name: Build Android APK
         script: |
-          chmod +x gradlew || true
-          if [ -f "./gradlew" ]; then
-            ./gradlew assembleDebug
-          else
-            cd ruhul && chmod +x gradlew && ./gradlew assembleDebug
+          BUILD_DIR=$(find . -maxdepth 2 -name "gradlew" -exec dirname {} \;)
+          if [ -z "$BUILD_DIR" ]; then
+            BUILD_DIR="."
           fi
+          echo "Building in directory: $BUILD_DIR"
+          cd "$BUILD_DIR"
+          chmod +x gradlew
+          ./gradlew assembleDebug
     artifacts:
-      - app/build/outputs/apk/**/*.apk
-      - ruhul/app/build/outputs/apk/**/*.apk
+      - "**/build/outputs/apk/**/*.apk"
