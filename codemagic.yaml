@@ -10,28 +10,20 @@ workflows:
       - name: Set up local.properties
         script: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
-      - name: Locate and Build APK
+      - name: Update Gradle Distribution and Build
         script: |
-          GRADLEW_PATH=$(find . -name "gradlew" -type f | head -n 1)
-          if [ -n "$GRADLEW_PATH" ]; then
-            BUILD_DIR=$(dirname "$GRADLEW_PATH")
-            echo "Found gradlew in: $BUILD_DIR"
-            cd "$BUILD_DIR"
+          PROP_FILE=$(find . -name "gradle-wrapper.properties" -type f | head -n 1)
+          if [ -n "$PROP_FILE" ]; then
+            ROOT_DIR=$(dirname $(dirname $(dirname "$PROP_FILE")))
+            echo "Updating gradle wrapper in: $PROP_FILE"
+            sed -i '' 's/gradle-.*-bin.zip/gradle-8.5.1-bin.zip/g' "$PROP_FILE"
+            cd "$ROOT_DIR"
             chmod +x gradlew
-            ./gradlew wrapper --gradle-version 8.5.1 || true
             ./gradlew assembleDebug
           else
-            echo "Searching for build.gradle or build.gradle.kts..."
-            BUILD_FILE=$(find . -name "build.gradle*" -type f | head -n 1)
-            if [ -n "$BUILD_FILE" ]; then
-              BUILD_DIR=$(dirname "$BUILD_FILE")
-              cd "$BUILD_DIR"
-              gradle wrapper --gradle-version 8.5.1 || true
-              gradle assembleDebug
-            else
-              echo "No Gradle project found!"
-              exit 1
-            fi
+            echo "gradle-wrapper.properties not found!"
+            exit 1
           fi
     artifacts:
+      - "**/build/outputs/apk/**/*.apk"
       - "**/build/outputs/apk/**/*.apk"
