@@ -26,3 +26,32 @@ workflows:
           fi
     artifacts:
       - "**/build/outputs/apk/**/*.apk"
+workflows:
+  android-workflow:
+    name: Build Android APK
+    max_build_duration: 30
+    instance_type: mac_mini_m1
+    scripts:
+      - name: Unzip project
+        script: |
+          unzip -o ruhul.zip || true
+      - name: Set up local.properties
+        script: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+      - name: Build Root Project
+        script: |
+          SETTINGS_FILE=$(find . -name "settings.gradle*" -type f | head -n 1)
+          if [ -n "$SETTINGS_FILE" ]; then
+            ROOT_DIR=$(dirname "$SETTINGS_FILE")
+            echo "Navigating to Root Directory: $ROOT_DIR"
+            cd "$ROOT_DIR"
+            gradle wrapper --gradle-version 8.5.1
+            chmod +x gradlew
+            ./gradlew assembleDebug
+          else
+            echo "settings.gradle file not found!"
+            exit 1
+          fi
+    artifacts:
+      - "**/build/outputs/apk/**/*.apk"
+      
