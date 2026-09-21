@@ -12,16 +12,21 @@ workflows:
           echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
       - name: Build Root Project
         script: |
-          SETTINGS_FILE=$(find . -name "settings.gradle*" -type f | head -n 1)
-          if [ -n "$SETTINGS_FILE" ]; then
-            ROOT_DIR=$(dirname "$SETTINGS_FILE")
+          BUILD_FILE=$(find . -name "build.gradle*" -type f | head -n 1)
+          if [ -n "$BUILD_FILE" ]; then
+            ROOT_DIR=$(dirname "$BUILD_FILE")
             echo "Navigating to Root Directory: $ROOT_DIR"
             cd "$ROOT_DIR"
-            gradle wrapper --gradle-version 8.5.1
-            chmod +x gradlew
-            ./gradlew assembleDebug
+            gradle wrapper --gradle-version 8.7 || true
+            if [ -f "./gradlew" ]; then
+              chmod +x gradlew
+              ./gradlew assembleDebug
+            else
+              echo "Executing direct gradle build..."
+              gradle assembleDebug
+            fi
           else
-            echo "settings.gradle file not found!"
+            echo "build.gradle file not found!"
             exit 1
           fi
     artifacts:
