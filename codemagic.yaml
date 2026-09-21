@@ -10,7 +10,7 @@ workflows:
       - name: Set up local.properties
         script: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
-      - name: Build Android APK
+      - name: Update Gradle wrapper and Build
         script: |
           GRADLEW_PATH=$(find . -name "gradlew" -type f | head -n 1)
           if [ -n "$GRADLEW_PATH" ]; then
@@ -18,10 +18,11 @@ workflows:
             echo "Found gradlew in: $BUILD_DIR"
             cd "$BUILD_DIR"
             chmod +x gradlew
+            ./gradlew wrapper --gradle-version 8.5.1
             ./gradlew assembleDebug
           else
-            echo "gradlew not found, trying gradle..."
-            gradle assembleDebug
+            echo "gradlew not found!"
+            exit 1
           fi
     artifacts:
       - "**/build/outputs/apk/**/*.apk"
