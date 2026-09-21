@@ -10,34 +10,6 @@ workflows:
       - name: Set up local.properties
         script: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
-      - name: Generate Wrapper and Build
-        script: |
-          BUILD_FILE=$(find . -name "build.gradle*" -type f | head -n 1)
-          if [ -n "$BUILD_FILE" ]; then
-            BUILD_DIR=$(dirname "$BUILD_FILE")
-            echo "Navigating to project root: $BUILD_DIR"
-            cd "$BUILD_DIR"
-            gradle wrapper --gradle-version 8.5.1
-            chmod +x gradlew
-            ./gradlew assembleDebug
-          else
-            echo "No build.gradle file found!"
-            exit 1
-          fi
-    artifacts:
-      - "**/build/outputs/apk/**/*.apk"
-workflows:
-  android-workflow:
-    name: Build Android APK
-    max_build_duration: 30
-    instance_type: mac_mini_m1
-    scripts:
-      - name: Unzip project
-        script: |
-          unzip -o ruhul.zip || true
-      - name: Set up local.properties
-        script: |
-          echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
       - name: Build Root Project
         script: |
           SETTINGS_FILE=$(find . -name "settings.gradle*" -type f | head -n 1)
@@ -54,4 +26,3 @@ workflows:
           fi
     artifacts:
       - "**/build/outputs/apk/**/*.apk"
-      
