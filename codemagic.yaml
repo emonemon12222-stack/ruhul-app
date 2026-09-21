@@ -7,19 +7,21 @@ workflows:
       - name: Unzip project
         script: |
           unzip -o ruhul.zip || true
-          find . -maxdepth 3 -type f
       - name: Set up local.properties
         script: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
       - name: Build Android APK
         script: |
-          BUILD_DIR=$(find . -maxdepth 2 -name "gradlew" -exec dirname {} \;)
-          if [ -z "$BUILD_DIR" ]; then
-            BUILD_DIR="."
+          GRADLEW_PATH=$(find . -name "gradlew" -type f | head -n 1)
+          if [ -n "$GRADLEW_PATH" ]; then
+            BUILD_DIR=$(dirname "$GRADLEW_PATH")
+            echo "Found gradlew in: $BUILD_DIR"
+            cd "$BUILD_DIR"
+            chmod +x gradlew
+            ./gradlew assembleDebug
+          else
+            echo "gradlew not found, trying gradle..."
+            gradle assembleDebug
           fi
-          echo "Building in directory: $BUILD_DIR"
-          cd "$BUILD_DIR"
-          chmod +x gradlew
-          ./gradlew assembleDebug
     artifacts:
       - "**/build/outputs/apk/**/*.apk"
