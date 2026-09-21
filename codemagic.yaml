@@ -10,24 +10,18 @@ workflows:
       - name: Set up local.properties
         script: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
-      - name: Fix Wrapper and Build
+      - name: Generate Wrapper and Build
         script: |
-          PROP_FILE=$(find . -name "gradle-wrapper.properties" -type f | head -n 1)
-          if [ -n "$PROP_FILE" ]; then
-            WRAPPER_DIR=$(dirname "$PROP_FILE")
-            ROOT_DIR=$(cd "$WRAPPER_DIR/../.." && pwd)
-            echo "Project root found at: $ROOT_DIR"
-            sed -i '' 's/gradle-.*-bin.zip/gradle-8.5.1-bin.zip/g' "$PROP_FILE"
-            cd "$ROOT_DIR"
-            if [ -f "./gradlew" ]; then
-              chmod +x gradlew
-              ./gradlew assembleDebug
-            else
-              echo "gradlew not found, using global gradle..."
-              gradle assembleDebug
-            fi
+          BUILD_FILE=$(find . -name "build.gradle*" -type f | head -n 1)
+          if [ -n "$BUILD_FILE" ]; then
+            BUILD_DIR=$(dirname "$BUILD_FILE")
+            echo "Navigating to project root: $BUILD_DIR"
+            cd "$BUILD_DIR"
+            gradle wrapper --gradle-version 8.5.1
+            chmod +x gradlew
+            ./gradlew assembleDebug
           else
-            echo "gradle-wrapper.properties not found!"
+            echo "No build.gradle file found!"
             exit 1
           fi
     artifacts:
